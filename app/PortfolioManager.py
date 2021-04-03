@@ -2,7 +2,7 @@ import log4p
 import json
 import configparser
 
-from ApiDao import Questrade
+from app.api.ApiDao import Questrade
 
 log = log4p.GetLogger(__name__).logger
 config = configparser.ConfigParser()
@@ -17,10 +17,10 @@ class Symbol(object):
 
     def __init__(self, j):
         self.__dict__ = j
-    
+
     def __repr__(self):
         return self.__dict__
-    
+
     def __str__(self):
         return json.dumps(self.__dict__)
 
@@ -28,13 +28,13 @@ class Position(object):
 
     def __init__(self, j):
         self.__dict__ = j
-    
+
     def set_weight(self, weight):
         self.weight = weight
-    
+
     def __repr__(self):
         return self.__dict__
-    
+
     def __str__(self):
         return json.dumps(self.__dict__)
 
@@ -55,10 +55,10 @@ class Order(object):
             "secondaryRoute": "AUTO",
             "amount": format(quantity*limitPrice,'.2f')
         }
-    
+
     def __repr__(self):
         return self.__dict__
-    
+
     def __str__(self):
         return json.dumps(self.__dict__)
 
@@ -71,10 +71,10 @@ class Portfolio:
         self.set_positions(account_positions)
         self.set_total_value()
         self.set_positions_weight()
-    
+
     def set_target(self, target):
         self.target = target
-    
+
     def set_balance(self, account_balances):
         for bal in account_balances['perCurrencyBalances']:
             if bal['currency'] == 'CAD':
@@ -85,22 +85,22 @@ class Portfolio:
         for pos in account_positions['positions']:
             position = Position(pos)
             self.positions.append(Position(pos))
-    
+
     def set_total_value(self):
         total = self.balance
         for pos in self.positions:
             total += pos.currentMarketValue
         self.total_value = total
-    
+
     def set_positions_weight(self):
         total = self.balance
         for pos in self.positions:
             weight = pos.currentMarketValue/self.total_value
             pos.set_weight(weight)
-        
+
     def __repr__(self):
         return {'account_type':self.account_type,'balance':str(self.balance),'positions':self.positions}
-    
+
     def __str__(self):
         portfolio_str = "Portfolio(account_type="+self.account_type+",balance="+str(self.balance)+",positions=\n"
         for pos in self.positions:
@@ -161,5 +161,3 @@ class PortfolioManager:
         log.info(order.__str__())
         return order
     
-QuestradeAPI = Questrade()
-PortfolioManager = PortfolioManager(QuestradeAPI)

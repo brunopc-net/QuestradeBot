@@ -96,7 +96,7 @@ class Token:
         log.info("Token is registered: {0}".format(is_registered))
         return is_registered
     
-    def get_access_token(self):
+    def get_token(self):
         return self._api_name
         
     def get_access_token(self):
