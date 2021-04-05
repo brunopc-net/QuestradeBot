@@ -14,7 +14,5 @@ RUN pip install -r requirements.txt
 # copy the content of the local src directory to the working directory
 COPY app/ .
 
-RUN echo "${PYTHONPATH}"
-
 # command to run on container start
-CMD [ "python", "/app/Main.py" ]
+CMD [ "python", "./app/Main.py" ]
