@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
-from app.api.TokenManager import TokenManager
+from src.api.TokenManager import TokenManager
 
 log = log4p.GetLogger(__name__).logger
 redis = redis.Redis()
@@ -113,7 +113,7 @@ class Token:
     def _get_manual_token():
         while True:
             manual_token = input("Enter the manually generated token: ").strip()
-            if len(manual_token) < 24:  # general test.
+            if len(manual_token) < 24:  # general tests.
                 print("The token is not valid, please try again")
             else:
                 return manual_token

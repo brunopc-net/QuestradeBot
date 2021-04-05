@@ -4,9 +4,9 @@ import log4p
 import configparser
 import os
 
-from app.api.QuestradeDao import QuestradeDao
-from app.model.AccountType import AccountType
-from app.model.Portfolio import Portfolio
+from src.api.QuestradeDao import QuestradeDao
+from src.model.AccountType import AccountType
+from src.model.Portfolio import Portfolio
 
 log = log4p.GetLogger(__name__).logger
 config = configparser.ConfigParser()

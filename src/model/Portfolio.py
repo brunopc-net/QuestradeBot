@@ -1,4 +1,4 @@
-from app.model.Position import Position
+from src.model.Position import Position
 
 
 class Portfolio:
