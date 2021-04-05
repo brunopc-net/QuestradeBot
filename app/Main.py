@@ -17,6 +17,7 @@ questrade = QuestradeDao()
 def run():
     config.read('../config.ini')
     validate_config()
+    log.info("WH test")
     for account_type in config.sections():
         account_id = os.environ[get_account_id_field(account_type)]
         portfolio = build_portfolio(account_id)
