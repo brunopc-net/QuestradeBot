@@ -86,6 +86,8 @@ def validate_total_weight(total_weight, account_type):
         sys.exit()
 
 
-if __name__ == "__main__":
+def run():
     config.read('../config.ini')
     validate_config()
+
+run()
