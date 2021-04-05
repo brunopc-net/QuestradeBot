@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
-from src.api.TokenManager import TokenManager
+from TokenManager import TokenManager
 
 log = log4p.GetLogger(__name__).logger
 redis = redis.Redis()
