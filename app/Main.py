@@ -14,16 +14,6 @@ config = configparser.ConfigParser()
 questrade = QuestradeDao()
 
 
-def run():
-    config.read('../config.ini')
-    validate_config()
-    log.info("WH test 2")
-    for account_type in config.sections():
-        account_id = os.environ[get_account_id_field(account_type)]
-        portfolio = build_portfolio(account_id)
-        log.info("New portfolio loaded - " + account_type + ": " + portfolio.__str__())
-
-
 def build_portfolio(account_id):
     balances = questrade.get_balances(account_id)
     positions = questrade.get_positions(account_id)
@@ -96,4 +86,6 @@ def validate_total_weight(total_weight, account_type):
         sys.exit()
 
 
-run()
+if __name__ == "__main__":
+    config.read('../config.ini')
+    validate_config()
