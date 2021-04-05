@@ -2,7 +2,7 @@ import log4p
 import requests
 import requests_cache
 
-from Token import Token
+from app.api.Token import Token
 
 log = log4p.GetLogger(__name__).logger
 
