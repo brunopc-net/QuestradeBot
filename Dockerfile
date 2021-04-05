@@ -15,4 +15,4 @@ RUN pip install -r requirements.txt
 COPY app/ .
 
 # command to run on container start
-CMD [ "python", "./Main.py" ]
+CMD [ "python", "Main.py" ]
