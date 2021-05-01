@@ -5,7 +5,6 @@ import json
 log = log4p.GetLogger(__name__).logger
 redis = redis.Redis()
 
-
 class TokenManager:
 
     @staticmethod

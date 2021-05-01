@@ -1,3 +1,5 @@
+import sys
+
 import log4p
 import requests
 import requests_cache
@@ -15,22 +17,24 @@ class ApiDao:
         requests_cache.install_cache('api_cache', backend='memory', expire_after=300)
 
     def api_get(self, endpoint):
-        request_url = self._token.get_api_server() + endpoint
-        log.info("GET request for {0}".format(request_url))
+        request_url = self._token.get_api_server() + endpoint 
+        log.info("GET {0}".format(request_url))
+        log.debug("Headers: {0}".format(self._get_headers()))
         response = requests.get(request_url, headers=self._get_headers())
 
         if response:
             log.info("Request succeeded")
+            log.debug("Response: {0} {1}".format(response.status_code, response.json()))
+            return response.json()
         else:
-            log.error("Request failed: {0}".format(response.status_code))
-
-        return response.json()
+            log.error("Request failed - {0} {1} {2}".format(response.status_code, response.reason, response.json()))
+            sys.exit()
 
     def get_name(self):
         return self._name
 
     def _get_headers(self):
         token_type = self._token.get_token_type()
-        token = self._token.get_token()
+        token = self._token.get_access_token()
         auth = "{0} {1}".format(token_type, token)
         return {'Content-Type': 'application/json', "Authorization": auth}

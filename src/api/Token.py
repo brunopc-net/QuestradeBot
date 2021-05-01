@@ -9,8 +9,8 @@ from datetime import timedelta
 from src.api.TokenManager import TokenManager
 
 log = log4p.GetLogger(__name__).logger
-redis = redis.Redis()
 
+redis = redis.Redis()
 
 class Token:
 
@@ -60,7 +60,7 @@ class Token:
         self._registration = new_registration
         log.info("Getting new registration: done")
         self._registration.update({"timestamp": datetime.now().isoformat()})
-        TokenStorage.store(self._name, self._registration)
+        TokenManager.store(self._name, self._registration)
 
     def _is_refresh_expired(self):
         is_refresh_expired = datetime.now() >= self.get_refresh_expiration()
@@ -76,9 +76,6 @@ class Token:
         is_registered = self._registration is not None
         log.info("Token is registered: {0}".format(is_registered))
         return is_registered
-
-    def get_token(self):
-        return self._api_name
 
     def get_access_token(self):
         return self._registration['access_token']

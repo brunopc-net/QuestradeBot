@@ -8,7 +8,7 @@ from api.QuestradeDao import QuestradeDao
 from model.AccountType import AccountType
 from model.Portfolio import Portfolio
 
-log = log4p.GetLogger(__name__).logger
+log = log4p.GetLogger(__name__, config="../log4p.json").logger
 config = configparser.ConfigParser()
 
 questrade = QuestradeDao()
@@ -74,9 +74,12 @@ def validate_weight(weight):
 
 
 def validate_ticker(ticker):
+    log.info("Validating if '{0}' is a valid ticker".format(ticker.upper()))
     symbol = questrade.get_symbol(ticker)
-    response_symbol_ticker = json.loads(symbol).symbols[0].symbol
-    log.info(response_symbol_ticker + " is a valid ticker")
+    if len(symbol['symbols']) != 1:
+        log.fatal(ticker.upper()+" is not a valid ticker")
+        sys.exit()
+    log.info(ticker.upper() + " is a valid ticker")
 
 
 def validate_total_weight(total_weight, account_type):
