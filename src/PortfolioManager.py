@@ -2,7 +2,7 @@
 class PortfolioManager:
     
     def __init__(self, broker):
-        config.read(broker.get_name()+"_config.ini")
+        config.read("broker.get_name()+"_"config.ini")
         self._broker = broker
         self.orders = []
         self.load_orders()
