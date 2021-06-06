@@ -1,47 +1,43 @@
-from src.model.Position import Position
-
-
 class Portfolio:
 
-    def __init__(self, account_id, account_balances, account_positions):
+    def __init__(self, account_type, account_id, positions, balance):
+        self.account_type = account_type
         self.account_id = account_id
-        self.set_balance(account_balances)
-        self.set_positions(account_positions)
-        self.set_total_value()
-        self.set_positions_weight()
+        self.positions = positions
+        self.balance = balance
 
-    def set_target(self, target):
-        self.target = target
+    def get_weight(self, symbol):
+        return self.get_position(symbol).currentMarketValue / self.get_total_value()
 
-    def set_balance(self, account_balances):
-        for bal in account_balances['perCurrencyBalances']:
-            if bal['currency'] == 'CAD':
-                self.balance = bal['cash']
+    def get_position(self, symbol):
+        for position in self.positions:
+            if position.symbol == symbol:
+                return position
+        return None
 
-    def set_positions(self, account_positions):
-        self.positions = []
-        for pos in account_positions['positions']:
-            position = Position(pos)
-            self.positions.append(Position(pos))
-
-    def set_total_value(self):
-        total = self.balance
-        for pos in self.positions:
-            total += pos.currentMarketValue
-        self.total_value = total
-
-    def set_positions_weight(self):
-        total = self.balance
-        for pos in self.positions:
-            weight = pos.currentMarketValue / self.total_value
-            pos.set_weight(weight)
+    def get_total_value(self):
+        total_value = 0
+        for position in self.positions:
+            total_value += position['currentMarketValue']
+        return total_value + self.balance
 
     def __repr__(self):
-        return {'balance': str(self.balance), 'positions': self.positions}
+        return {
+            'account_type': self.account_type,
+            'account_id': self.account_id,
+            'balance': str(self.balance),
+            'positions': self.positions
+        }
 
     def __str__(self):
-        portfolio_str = "Portfolio(balance=" + str(self.balance) + ",positions=\n"
+        portfolio_str = "Portfolio(account=" + self.account_type \
+                        + ", balance=" + Portfolio.money(self.balance) \
+                        + ", Positions:\n "
         for pos in self.positions:
             portfolio_str += "\t" + pos.__str__() + ",\n"
-        portfolio_str += ", total_value=" + format(self.total_value, '.2f') + ")"
+        portfolio_str += ", total_value=" + Portfolio.money(self.get_total_value()) + ")"
         return portfolio_str
+
+    @staticmethod
+    def money(amount):
+        return "$" + format(amount, '.2f')

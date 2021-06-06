@@ -12,11 +12,20 @@ config = configparser.ConfigParser()
 questrade = QuestradeDao()
 
 
-def validate_config():
+def load(config_path):
+    config.read(config_path)
     for account_type in get_account_types():
         validate_account_type(account_type)
         validate_account_id(account_type)
         validate_targets(account_type)
+
+
+def validate_account_type(account):
+    if account.upper() in AccountType.__members__:
+        log.info("Account: " + account + " will be managed")
+    else:
+        log.fatal("Account type " + account + " is not a valid account type")
+        sys.exit()
 
 
 def validate_account_id(account_type):
@@ -42,16 +51,7 @@ def validate_targets(account_type):
         validate_weight(weight)
         validate_ticker(ticker)
         total_weight += float(weight)
-        log.info("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW total_weight: "+str(total_weight))
     validate_total_weight(total_weight, account_type)
-
-
-def validate_account_type(account):
-    if account.upper() in AccountType.__members__:
-        log.info("Account: " + account + " will be managed")
-    else:
-        log.fatal("Account type " + account + " is not a valid account type")
-        sys.exit()
 
 
 def validate_weight(weight):
@@ -92,6 +92,5 @@ def get_targets(account_type):
     return config[account_type].items()
 
 
-def load_config(config_path):
-    config.read(config_path)
-    validate_config()
+def get_target(account_type, ticker):
+    return config[account_type][ticker]
