@@ -7,7 +7,7 @@ class Order(object):
         self.accountNumber = account_id
         self.symbolId = symbol_id
         self.quantity = quantity
-        self.limitPrice = format(limit_price, '.2f')
+        self.limitPrice = limit_price
         self.isAllOrNone = True
         self.isAnonymous = False
         self.orderType = "Limit"
@@ -15,7 +15,9 @@ class Order(object):
         self.action = "Buy"
         self.primaryRoute = "AUTO"
         self.secondaryRoute = "AUTO"
-        self.amount = format(quantity * limit_price, '.2f')
+
+    def get_amount(self):
+        return self.quantity * self.limitPrice
 
     def __repr__(self):
         return {
@@ -29,8 +31,7 @@ class Order(object):
             "timeInForce": self.timeInForce,
             "action": self.action,
             "primaryRoute": self.primaryRoute,
-            "secondaryRoute": self.secondaryRoute,
-            "amount": self.amount
+            "secondaryRoute": self.secondaryRoute
         }
 
     def __str__(self):

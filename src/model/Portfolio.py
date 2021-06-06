@@ -5,9 +5,10 @@ class Portfolio:
         self.account_id = account_id
         self.positions = positions
         self.balance = balance
+        self.total_value = self.__get_total_value()
 
     def get_weight(self, symbol):
-        return self.get_position(symbol).currentMarketValue / self.get_total_value()
+        return self.get_position(symbol).currentMarketValue / self.total_value
 
     def get_position(self, symbol):
         for position in self.positions:
@@ -15,11 +16,11 @@ class Portfolio:
                 return position
         return None
 
-    def get_total_value(self):
-        total_value = 0
+    def __get_total_value(self):
+        total_value = self.balance
         for position in self.positions:
             total_value += position['currentMarketValue']
-        return total_value + self.balance
+        return total_value
 
     def __repr__(self):
         return {
@@ -35,7 +36,7 @@ class Portfolio:
                         + ", Positions:\n "
         for pos in self.positions:
             portfolio_str += "\t" + pos.__str__() + ",\n"
-        portfolio_str += ", total_value=" + Portfolio.money(self.get_total_value()) + ")"
+        portfolio_str += ", total_value=" + Portfolio.money(self.total_value) + ")"
         return portfolio_str
 
     @staticmethod
