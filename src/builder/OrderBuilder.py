@@ -9,64 +9,65 @@ log = log4p.GetLogger(__name__, config="../log4p.json").logger
 
 # We set a limit price a couple of cents more then the current price for 3 reasons:
 # 1- We don't want to overpay if a sudden, temporary price spike is occurring
-# 2- We want to avoid sudden small spikes to block the trade
+# 2- We want to avoid live price increase to block the trade
 # 3- Position current price from the API may be a bit delayed
 LIMIT_UPPER_PRICE = 0.05
+
+
+def money(amount):
+    return "$" + format(amount, '.2f')
+
+
+def _get_limit_price(position):
+    return float(position['currentPrice'] + LIMIT_UPPER_PRICE)
 
 
 class OrderBuilder(object):
 
     def __init__(self, portfolio):
         self.portfolio = portfolio
-        self.cash = portfolio.balance
+        self.orders = []
 
     def build_orders(self):
         log.info(
             "Building orders for " + self.portfolio.account_type + " portfolio, "
             + "Balance: " + money(self.portfolio.balance)
         )
-        orders = []
         for position in self.portfolio.positions:
-            order = self.__build_order(position)
+            order = self._build_order(position)
             if order is not None:
-                orders.append(order)
-                self.cash -= order.get_amount()
-                log.info("Cash remaining: " + money(self.cash))
+                self.orders.append(order)
+                self.portfolio.update_balance(order.get_amount())
+                log.info("Balance remaining: " + money(self.portfolio.balance))
         log.info("Building orders for " + self.portfolio.account_type + " portfolio: DONE")
-        return orders
+        return self.orders
 
-    def __build_order(self, position):
-        order_qty = self.__get_quantity(position)
+    def _build_order(self, position):
+        order_qty = self._get_quantity(position)
         if order_qty == 0:
             return None
         order = Order(
             self.portfolio.account_id,
             position['symbolId'],
             order_qty,
-            self.__get_limit_price(position)
+            _get_limit_price(position)
         )
         log.info("New order created - amount " + money(order.get_amount()) + " " + str(order))
         return order
 
-    def __get_quantity(self, position):
-        order_amount = self.__get_amount(self.portfolio, position)
-        if order_amount < position['currentPrice']:
-            log.info("Not enough cash to buy " + position['symbol'] +
-                     " - current value: " + money(position['currentPrice']))
+    def _get_quantity(self, position):
+        order_room = min(self._get_max_amount(position), self.portfolio.balance)
+        if order_room < position['currentPrice']:
+            log.info("Not enough room (" + money(order_room) + ") to buy "
+                     + position['symbol'] + " (" + money(position['currentPrice']) + ")")
             return 0
-        return floor(order_amount / self.__get_limit_price(position))
+        return floor(order_room / _get_limit_price(position))
 
-    def __get_amount(self, portfolio, position):
-        position_target_weight = Config.get_target(portfolio.account_type, position['symbol'])
-        position_target_amount = float(position_target_weight) * portfolio.total_value
+    def _get_max_amount(self, position):
+        position_target_weight = Config.get_target(self.portfolio.account_type, position['symbol'])
+        position_target_amount = float(position_target_weight) * self.portfolio.total_value
         log.info("Position " + position['symbol'] + ": target_weight=" + str(position_target_weight) +
                  ", target_amount=" + money(position_target_amount))
-        position_target_buy = position_target_amount - position['currentMarketValue']
-        return min(position_target_buy, self.cash)
-
-    def __get_limit_price(self, position):
-        return float(position['currentPrice'] + LIMIT_UPPER_PRICE)
-
-
-def money(amount):
-    return "$" + format(amount, '.2f')
+        # Setting an overflow limit of half the position price to avoid letting too much leftover money
+        overflow_limit = position['currentPrice'] * 0.667
+        return position_target_amount - position['currentMarketValue'] + overflow_limit

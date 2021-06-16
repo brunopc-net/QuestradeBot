@@ -1,6 +1,10 @@
 from src.api.ApiDao import ApiDao
 
 
+def _get_account_call(function, account_id):
+    return "{0}/accounts/{1}/{2}".format(QuestradeDao.API_VERSION, account_id, function)
+
+
 class QuestradeDao(ApiDao):
     API_VERSION = "v1"
     REFRESH_TOKEN_URL = "https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token="
@@ -11,39 +15,45 @@ class QuestradeDao(ApiDao):
 
     def get_time(self):
         endpoint = "{0}/time".format(QuestradeDao.API_VERSION)
-        return super().api_get(endpoint)
+        return super().get(endpoint)
 
     def get_markets(self):
         endpoint = "{0}/markets".format(QuestradeDao.API_VERSION)
-        return super().api_get(endpoint)
+        return super().get(endpoint)
 
     def get_quotes(self, id):
         endpoint = "{0}/markets/quotes/{1}".format(QuestradeDao.API_VERSION, id)
-        return super().api_get(endpoint)
+        return super().get(endpoint)
 
     def get_symbol(self, symbol):
         endpoint = "{0}/symbols/search?prefix={1}".format(QuestradeDao.API_VERSION, symbol)
-        return super().api_get(endpoint)
+        return super().get(endpoint)
 
     def get_accounts(self):
         endpoint = "{0}/accounts".format(QuestradeDao.API_VERSION)
-        return super().api_get(endpoint)
+        return super().get(endpoint)
 
     def get_positions(self, account_id):
-        endpoint = self._get_account_call('positions', account_id)
-        return super().api_get(endpoint)
+        endpoint = _get_account_call('positions', account_id)
+        return super().get(endpoint)['positions']
 
     def get_activities(self, account_id):
-        endpoint = self._get_account_call('activities', account_id)
-        return super().api_get(endpoint)
+        endpoint = _get_account_call('activities', account_id)
+        return super().get(endpoint)
 
-    def get_orders(self, account_id):
-        endpoint = self._get_account_call('orders', account_id)
-        return super().api_get(endpoint)
+    def get_order(self, account_id, order_id):
+        endpoint = _get_account_call('orders', account_id)+"ids="+order_id
+        return super().get(endpoint)["orders"][0]
 
     def get_balances(self, account_id):
-        endpoint = self._get_account_call('balances', account_id)
-        return super().api_get(endpoint)
+        endpoint = _get_account_call('balances', account_id)
+        return super().get(endpoint)
 
-    def _get_account_call(self, function, account_id):
-        return "{0}/accounts/{1}/{2}".format(QuestradeDao.API_VERSION, account_id, function)
+    def get_balance(self, account_id, currency):
+        for balance in self.get_balances(account_id)['perCurrencyBalances']:
+            if balance['currency'] == currency:
+                return balance['cash']
+
+    def post_order(self, order):
+        endpoint = _get_account_call('orders', order.accountNumber)
+        return super().post(endpoint, order.__repr__())["orders"][0]

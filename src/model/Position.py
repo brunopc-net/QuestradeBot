@@ -13,8 +13,8 @@ class Position(object):
         self.closedPnl = pos_json.closedPnl
         self.openPnl = pos_json.openPnl
         self.totalCost = pos_json.totalCost
-        self.isRealTime = pos_json.isRealTime
-        self.isUnderReorg = pos_json.isUnderReorg
+        # self.isRealTime = pos_json.isRealTime
+        # self.isUnderReorg = pos_json.isUnderReorg
 
     def __repr__(self):
         return {

@@ -8,6 +8,7 @@ from src.api.Token import Token
 
 log = log4p.GetLogger(__name__).logger
 
+
 class ApiDao:
 
     def __init__(self, name, refresh_token_url, refresh_token_duration):
@@ -16,8 +17,8 @@ class ApiDao:
         # Caching requests to improve performance and reduce network I/O
         requests_cache.install_cache('api_cache', backend='memory', expire_after=300)
 
-    def api_get(self, endpoint):
-        request_url = self._token.get_api_server() + endpoint 
+    def get(self, endpoint):
+        request_url = self._token.get_api_server() + endpoint
         log.info("GET {0}".format(request_url))
         log.debug("Headers: {0}".format(self._get_headers()))
         response = requests.get(request_url, headers=self._get_headers())
@@ -29,6 +30,21 @@ class ApiDao:
         else:
             log.error("Request failed - {0} {1} {2}".format(response.status_code, response.reason, response.json()))
             sys.exit()
+
+    def post(self, endpoint, data):
+        request_url = self._token.get_api_server() + endpoint
+        log.info("GET {0}".format(request_url))
+        log.debug("Headers: {0}".format(self._get_headers()))
+        response = requests.post(request_url, json=data, headers=self._get_headers())
+
+        if response:
+            log.info("Request succeeded")
+            log.debug("Response: {0} {1}".format(response.status_code, response.json()))
+            return response.json()
+        else:
+            log.error("Request failed - {0} {1} {2}".format(response.status_code, response.reason, response.json()))
+            sys.exit()
+
 
     def get_name(self):
         return self._name
