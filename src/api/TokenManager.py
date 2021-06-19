@@ -5,6 +5,7 @@ import json
 log = log4p.GetLogger(__name__).logger
 redis = redis.Redis()
 
+
 class TokenManager:
 
     @staticmethod
@@ -23,5 +24,7 @@ class TokenManager:
         log.info("Storing token: done")
 
     @staticmethod
-    def is_stored(name):
-        return redis.exists(name)
+    def delete(name):
+        log.info("Deleting token…")
+        redis.delete(name)
+        log.info("Deleting token: done")

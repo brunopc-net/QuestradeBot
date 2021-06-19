@@ -1,44 +1,41 @@
-import sys
 import log4p
 import configparser
 import os
 
-from api.QuestradeDao import QuestradeDao
-from model.AccountType import AccountType
+from src.api.Questrade import Questrade
+from src.model.enum.AccountType import AccountType
 
 log = log4p.GetLogger(__name__, config="../log4p.json").logger
 config = configparser.ConfigParser()
-
-questrade = QuestradeDao()
+questrade = Questrade()
+accounts = questrade.get_accounts()
 
 
 def load(config_path):
     config.read(config_path)
     for account_type in get_account_types():
         validate_account_type(account_type)
-        validate_account_id(account_type)
+        validate_account(get_account_id(account_type))
         validate_targets(account_type)
 
 
 def validate_account_type(account):
-    if account.upper() in AccountType.__members__:
-        log.info("Account: " + account + " will be managed")
-    else:
-        log.fatal("Account type " + account + " is not a valid account type")
-        sys.exit()
+    if account.upper() not in AccountType.__members__:
+        raise ValueError("Account type " + account + " is not a valid account type")
 
 
-def validate_account_id(account_type):
-    log.info("Validating account id " + account_type)
-    try:
-        account_id = get_account_id(account_type)
-        if int(account_id) > 99999999 or int(account_id) < 10000000:
-            raise ValueError("Questrade account id must be a 8 digits number")
-        log.info(get_account_id_field(account_type) + " is correctly set")
-    except Exception as e:
-        log.fatal(get_account_id_field(account_type) + " env variable is incorrect - value: (" + account_id + ")")
-        log.fatal(e)
-        sys.exit()
+def validate_account(account_id):
+    if int(account_id) > 99999999 or int(account_id) < 10000000:
+        raise ValueError("Questrade account id must be a 8 digits number - current value" + account_id)
+    if not is_valid_account(account_id):
+        raise ValueError("Questrade account " + account_id + " is not active or was not found")
+
+
+def is_valid_account(account_id):
+    for account in accounts:
+        if account["number"] == str(account_id):
+            if account["status"] == "Active":
+                return True
 
 
 def get_account_id_field(account_type):
@@ -55,29 +52,19 @@ def validate_targets(account_type):
 
 
 def validate_weight(weight):
-    try:
-        if float(weight) < 0:
-            raise ValueError("Sorry, no numbers below zero")
-        log.info("Value " + weight + " OK")
-    except ValueError:
-        log.fatal("Weight value is not valid (" + str(weight) + ")")
-        sys.exit()
+    if float(weight) < 0:
+        raise ValueError("The weight of a symbol can't be below zero - current value" + weight)
 
 
 def validate_ticker(ticker):
-    log.info("Validating if '{0}' is a valid ticker".format(ticker.upper()))
-    symbol = questrade.get_symbol(ticker)
-    if len(symbol['symbols']) != 1:
-        log.fatal(ticker.upper() + " is not a valid ticker")
-        sys.exit()
-    log.info(ticker.upper() + " is a valid ticker")
+    if len(questrade.get_symbol(ticker)['symbols']) != 1:
+        raise ValueError(ticker.upper() + " is not a valid ticker, not found on Questrade")
 
 
 def validate_total_weight(total_weight, account_type):
-    if total_weight != 1:
-        log.error("Total weight your " + account_type + " portfolio: " + str(total_weight))
-        log.fatal("Total weight doesn't equal 100%. Please review your tickers/weight and get me back.")
-        sys.exit()
+    if round(total_weight, 2) != 1.00:
+        raise ValueError("Total weight for account " + account_type
+                         + " doesn't equal 1.00 - current value" + str(total_weight))
 
 
 def get_account_types():

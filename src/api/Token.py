@@ -1,5 +1,4 @@
 import log4p
-import redis
 import requests
 import sys
 
@@ -10,7 +9,6 @@ from src.api.TokenManager import TokenManager
 
 log = log4p.GetLogger(__name__).logger
 
-redis = redis.Redis()
 
 class Token:
 
@@ -46,6 +44,7 @@ class Token:
 
     def _request_registration(self, token):
         log.info("Requesting new registration…")
+        log.info("Request: "+self._refresh_token_url + token)
         response = requests.get(self._refresh_token_url + token)
         if not response:
             log.error("Request failed, status code: {0}".format(response.status_code))
